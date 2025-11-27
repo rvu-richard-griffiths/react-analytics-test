@@ -1,0 +1,23 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Source code
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+
+# Config files
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.editorconfig text eol=lf
+
+# Exclude files from archives
+.gitattributes export-ignore
+.gitignore export-ignore
+.editorconfig export-ignore
