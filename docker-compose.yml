@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # NATS messaging broker
+  nats:
+    image: nats:2.10-alpine
+    container_name: react-analytics-nats
+    ports:
+      - "4222:4222"   # Client connections
+      - "8222:8222"   # HTTP monitoring
+      - "6222:6222"   # Cluster routing
+    command: 
+      - "-js"         # Enable JetStream
+      - "-m"          # Enable monitoring
+      - "8222"        # Monitoring port
+    networks:
+      - analytics-demo
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Analytics event subscriber (demo)
+  analytics-subscriber:
+    build:
+      context: ./demo
+      dockerfile: Dockerfile.subscriber
+    container_name: react-analytics-subscriber
+    depends_on:
+      nats:
+        condition: service_healthy
+    environment:
+      - NATS_URL=nats://nats:4222
+      - SUBJECT=analytics.events
+    networks:
+      - analytics-demo
+    restart: unless-stopped
+
+  # NATS to HTTP bridge (for Storybook)
+  nats-bridge:
+    build:
+      context: ./demo
+      dockerfile: Dockerfile.bridge
+    container_name: react-analytics-bridge
+    ports:
+      - "3001:3001"   # HTTP endpoint for browser
+    depends_on:
+      nats:
+        condition: service_healthy
+    environment:
+      - NATS_URL=nats://nats:4222
+      - PORT=3001
+      - SUBJECT=analytics.events
+    networks:
+      - analytics-demo
+    restart: unless-stopped
+
+networks:
+  analytics-demo:
+    name: analytics-demo
+    driver: bridge

@@ -62,9 +62,16 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
   adapter,
   enabled = true,
 }) => {
+  console.log('🔧 AnalyticsProvider mounted:', { hasAdapter: !!adapter, enabled });
+  
   const track = useCallback(
     (event: Omit<AnalyticsEvent, 'timestamp'>) => {
-      if (!enabled) return;
+      console.log('📤 track() called:', event);
+      
+      if (!enabled) {
+        console.log('⏸️ Analytics disabled');
+        return;
+      }
 
       const fullEvent: AnalyticsEvent = {
         ...event,
@@ -72,12 +79,23 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
       };
 
       if (adapter) {
-        adapter.track(fullEvent);
+        console.log('📨 Calling adapter.track() with:', fullEvent);
+        console.log('📨 Adapter type:', typeof adapter);
+        console.log('📨 Adapter.track type:', typeof adapter.track);
+        console.log('📨 Adapter keys:', Object.keys(adapter));
+        
+        if (typeof adapter.track === 'function') {
+          const result = adapter.track(fullEvent);
+          console.log('📨 adapter.track() returned:', result);
+          if (result instanceof Promise) {
+            console.log('📨 Result is a Promise');
+          }
+        } else {
+          console.error('❌ adapter.track is not a function!');
+        }
       } else {
         // Default behavior: log to console in development
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[Analytics]', fullEvent);
-        }
+        console.log('[Analytics] No adapter, logging:', fullEvent);
       }
     },
     [adapter, enabled]

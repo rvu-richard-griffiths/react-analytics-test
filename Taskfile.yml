@@ -54,6 +54,56 @@ tasks:
     cmds:
       - node scripts/generate-ai-docs.js
 
+  # Demo commands
+  demo-up:
+    desc: Start NATS analytics demo (Docker containers)
+    cmds:
+      - docker-compose up -d
+      - echo "NATS analytics demo started"
+      - echo "NATS Server http://localhost:8222"
+      - echo "Bridge API http://localhost:3001"
+      - echo "View logs task demo-logs"
+
+  demo-down:
+    desc: Stop NATS analytics demo
+    cmds:
+      - docker-compose down
+      - echo "NATS analytics demo stopped"
+
+  demo-logs:
+    desc: View real-time analytics events (subscriber logs)
+    cmds:
+      - docker-compose logs -f analytics-subscriber
+
+  demo-logs-all:
+    desc: View all demo container logs
+    cmds:
+      - docker-compose logs -f
+
+  demo-restart:
+    desc: Restart NATS analytics demo
+    cmds:
+      - task: demo-down
+      - task: demo-up
+
+  demo-build:
+    desc: Rebuild demo containers
+    cmds:
+      - docker-compose build --no-cache
+      - echo "Demo containers rebuilt"
+
+  demo-status:
+    desc: Check demo container status
+    cmds:
+      - docker-compose ps
+
+  demo-dev:
+    desc: Start Storybook with NATS analytics demo
+    cmds:
+      - task: demo-up
+      - sleep 3
+      - npm run storybook
+
   validate:
     desc: Run all validation checks (lint, type-check, build)
     cmds:

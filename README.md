@@ -47,6 +47,43 @@ function App() {
 }
 ```
 
+## 🎭 Live Demo with Real-Time Analytics
+
+Experience the analytics system in action with our NATS-powered demo!
+
+### Quick Start Demo
+
+```bash
+# Start NATS + Storybook in one command
+task demo-dev
+
+# Or start components separately:
+task demo-up        # Start NATS containers
+npm run storybook   # Start Storybook
+task demo-logs      # Watch events in real-time
+```
+
+When you interact with components in Storybook (clicking buttons, typing, etc.), you'll see events streaming in real-time to the terminal!
+
+**Example output:**
+```
+📊 Event #1 received
+🎯 Event Type: button_click
+🧩 Component: button
+🏷️  Component ID: submit-button
+📋 Metadata: { "variant": "primary" }
+```
+
+See [demo/README.md](./demo/README.md) for complete documentation.
+
+### Demo Features
+
+- ✅ **Real-time event streaming** via NATS message broker
+- ✅ **Visual feedback** in terminal as you interact
+- ✅ **HTTP bridge** for browser→NATS communication
+- ✅ **Docker-based** - runs in containers
+- ✅ **Query events** via REST API
+
 ## Components
 
 ### Button
