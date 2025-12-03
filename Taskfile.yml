@@ -49,6 +49,11 @@ tasks:
     cmds:
       - rm -rf dist storybook-static node_modules
 
+  generate-ai-docs:
+    desc: Generate AI-consumable documentation for component library
+    cmds:
+      - node scripts/generate-ai-docs.js
+
   validate:
     desc: Run all validation checks (lint, type-check, build)
     cmds:

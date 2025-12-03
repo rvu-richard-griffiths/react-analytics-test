@@ -15,7 +15,8 @@
     "test": "jest",
     "lint": "eslint src --ext .ts,.tsx",
     "type-check": "tsc --noEmit",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "generate-ai-docs": "node scripts/generate-ai-docs.js"
   },
   "keywords": [
     "react",

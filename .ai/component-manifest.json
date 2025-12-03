@@ -1,0 +1,490 @@
+{
+  "library": {
+    "name": "@your-org/react-analytics-ui",
+    "version": "1.0.0",
+    "description": "Context-aware UI component library with built-in analytics capabilities",
+    "framework": "React",
+    "typescript": true,
+    "repository": "https://github.com/rvu-richard-griffiths/react-analytics-test",
+    "keywords": [
+      "react",
+      "ui",
+      "components",
+      "analytics",
+      "tracking"
+    ]
+  },
+  "installation": {
+    "command": "npm install @your-org/react-analytics-ui",
+    "peerDependencies": {
+      "react": "^18.0.0",
+      "react-dom": "^18.0.0"
+    }
+  },
+  "setup": {
+    "provider": {
+      "import": "import { AnalyticsProvider } from '@your-org/react-analytics-ui';",
+      "required": true,
+      "description": "Wrap your app with AnalyticsProvider to enable analytics tracking",
+      "usage": "<AnalyticsProvider adapter={analyticsAdapter}>\n  <App />\n</AnalyticsProvider>",
+      "props": {
+        "adapter": {
+          "type": "AnalyticsAdapter",
+          "required": false,
+          "description": "Analytics adapter to integrate with your analytics platform"
+        },
+        "enabled": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Enable or disable analytics tracking globally"
+        }
+      }
+    },
+    "adapter": {
+      "interface": "AnalyticsAdapter",
+      "description": "Implement this interface to integrate with any analytics platform",
+      "structure": {
+        "track": "(event: AnalyticsEvent) => void | Promise<void>"
+      },
+      "examples": {
+        "console": "const consoleAdapter: AnalyticsAdapter = {\n  track: (event) => console.log('[Analytics]', event)\n};",
+        "googleAnalytics": "const gaAdapter: AnalyticsAdapter = {\n  track: (event) => {\n    gtag('event', event.eventType, {\n      component_type: event.componentType,\n      component_id: event.componentId,\n      ...event.metadata\n    });\n  }\n};",
+        "segment": "const segmentAdapter: AnalyticsAdapter = {\n  track: (event) => {\n    analytics.track(event.eventType, {\n      componentType: event.componentType,\n      componentId: event.componentId,\n      ...event.metadata\n    });\n  }\n};"
+      }
+    }
+  },
+  "components": [
+    {
+      "name": "Button",
+      "import": "import { Button } from '@your-org/react-analytics-ui';",
+      "description": "Button component with built-in analytics tracking for click events",
+      "props": {
+        "variant": {
+          "type": "'primary' | 'secondary' | 'danger'",
+          "default": "primary",
+          "description": "Button variant style"
+        },
+        "size": {
+          "type": "'small' | 'medium' | 'large'",
+          "default": "medium",
+          "description": "Button size"
+        },
+        "analyticsId": {
+          "type": "string",
+          "required": false,
+          "description": "Optional ID for analytics tracking"
+        },
+        "analyticsMetadata": {
+          "type": "Record<string, any>",
+          "required": false,
+          "description": "Additional metadata to include in analytics events"
+        },
+        "disableAnalytics": {
+          "type": "boolean",
+          "default": false,
+          "description": "Disable analytics tracking for this component"
+        },
+        "onClick": {
+          "type": "React.MouseEventHandler<HTMLButtonElement>",
+          "required": false,
+          "description": "Click event handler"
+        },
+        "disabled": {
+          "type": "boolean",
+          "required": false,
+          "description": "Disable the button"
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": true,
+          "description": "Button content"
+        }
+      },
+      "events": [
+        {
+          "name": "click",
+          "description": "Fired when the button is clicked",
+          "eventType": "button_click"
+        }
+      ],
+      "examples": [
+        {
+          "title": "Basic button",
+          "code": "<Button variant=\"primary\" onClick={handleClick}>\n  Submit\n</Button>"
+        },
+        {
+          "title": "Button with analytics",
+          "code": "<Button \n  variant=\"primary\" \n  analyticsId=\"submit-form\"\n  analyticsMetadata={{ formName: 'contact', section: 'footer' }}\n  onClick={handleSubmit}\n>\n  Submit Form\n</Button>"
+        },
+        {
+          "title": "Danger button",
+          "code": "<Button \n  variant=\"danger\" \n  size=\"small\"\n  analyticsId=\"delete-btn\"\n  onClick={handleDelete}\n>\n  Delete\n</Button>"
+        }
+      ]
+    },
+    {
+      "name": "TextBox",
+      "import": "import { TextBox } from '@your-org/react-analytics-ui';",
+      "description": "Text input component with built-in analytics tracking for focus, blur, and change events",
+      "props": {
+        "label": {
+          "type": "string",
+          "required": false,
+          "description": "Label for the text box"
+        },
+        "error": {
+          "type": "string",
+          "required": false,
+          "description": "Error message to display"
+        },
+        "helpText": {
+          "type": "string",
+          "required": false,
+          "description": "Help text to display below the input"
+        },
+        "analyticsId": {
+          "type": "string",
+          "required": false,
+          "description": "Optional ID for analytics tracking"
+        },
+        "analyticsMetadata": {
+          "type": "Record<string, any>",
+          "required": false,
+          "description": "Additional metadata to include in analytics events"
+        },
+        "disableAnalytics": {
+          "type": "boolean",
+          "default": false,
+          "description": "Disable analytics tracking for this component"
+        },
+        "trackOnChange": {
+          "type": "boolean",
+          "default": false,
+          "description": "Track on change events (can be noisy, disabled by default)"
+        },
+        "value": {
+          "type": "string",
+          "required": false,
+          "description": "Input value (for controlled components)"
+        },
+        "onChange": {
+          "type": "React.ChangeEventHandler<HTMLInputElement>",
+          "required": false,
+          "description": "Change event handler"
+        }
+      },
+      "events": [
+        {
+          "name": "focus",
+          "description": "Fired when the input receives focus",
+          "eventType": "textbox_focus"
+        },
+        {
+          "name": "blur",
+          "description": "Fired when the input loses focus",
+          "eventType": "textbox_blur",
+          "metadata": "Includes duration (time focused in milliseconds) and hasValue (boolean)"
+        },
+        {
+          "name": "change",
+          "description": "Fired when the input value changes (only if trackOnChange is true)",
+          "eventType": "textbox_change"
+        }
+      ],
+      "examples": [
+        {
+          "title": "Basic text input",
+          "code": "<TextBox\n  label=\"Email\"\n  placeholder=\"Enter your email\"\n  value={email}\n  onChange={(e) => setEmail(e.target.value)}\n/>"
+        },
+        {
+          "title": "Text input with analytics",
+          "code": "<TextBox\n  label=\"Email Address\"\n  placeholder=\"you@example.com\"\n  analyticsId=\"signup-email\"\n  analyticsMetadata={{ formName: 'signup', step: 1 }}\n  value={email}\n  onChange={(e) => setEmail(e.target.value)}\n/>"
+        },
+        {
+          "title": "Text input with error",
+          "code": "<TextBox\n  label=\"Password\"\n  type=\"password\"\n  error={passwordError}\n  helpText=\"Must be at least 8 characters\"\n  value={password}\n  onChange={(e) => setPassword(e.target.value)}\n/>"
+        }
+      ]
+    },
+    {
+      "name": "DatePicker",
+      "import": "import { DatePicker } from '@your-org/react-analytics-ui';",
+      "description": "Date picker component with built-in analytics tracking for date selection and calendar interactions",
+      "props": {
+        "value": {
+          "type": "Date | null",
+          "required": false,
+          "description": "The selected date value"
+        },
+        "onChange": {
+          "type": "(date: Date | null) => void",
+          "required": false,
+          "description": "Callback when date changes"
+        },
+        "minDate": {
+          "type": "Date",
+          "required": false,
+          "description": "Minimum selectable date"
+        },
+        "maxDate": {
+          "type": "Date",
+          "required": false,
+          "description": "Maximum selectable date"
+        },
+        "format": {
+          "type": "'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD'",
+          "default": "MM/DD/YYYY",
+          "description": "Date format for display"
+        },
+        "analyticsId": {
+          "type": "string",
+          "required": false,
+          "description": "Optional ID for analytics tracking"
+        },
+        "analyticsMetadata": {
+          "type": "Record<string, any>",
+          "required": false,
+          "description": "Additional metadata to include in analytics events"
+        },
+        "disableAnalytics": {
+          "type": "boolean",
+          "default": false,
+          "description": "Disable analytics tracking for this component"
+        },
+        "disabled": {
+          "type": "boolean",
+          "required": false,
+          "description": "Disable the date picker"
+        }
+      },
+      "events": [
+        {
+          "name": "open",
+          "description": "Fired when the calendar is opened",
+          "eventType": "datepicker_open"
+        },
+        {
+          "name": "close",
+          "description": "Fired when the calendar is closed",
+          "eventType": "datepicker_close",
+          "metadata": "Includes duration (time opened in milliseconds)"
+        },
+        {
+          "name": "select",
+          "description": "Fired when a date is selected",
+          "eventType": "datepicker_select",
+          "metadata": "Includes selectedDate (ISO string)"
+        }
+      ],
+      "examples": [
+        {
+          "title": "Basic date picker",
+          "code": "<DatePicker\n  value={selectedDate}\n  onChange={setSelectedDate}\n/>"
+        },
+        {
+          "title": "Date picker with analytics and constraints",
+          "code": "<DatePicker\n  value={bookingDate}\n  onChange={setBookingDate}\n  minDate={new Date()}\n  format=\"DD/MM/YYYY\"\n  analyticsId=\"booking-date\"\n  analyticsMetadata={{ context: 'booking-form', roomType: 'deluxe' }}\n/>"
+        },
+        {
+          "title": "Date picker with date range",
+          "code": "<DatePicker\n  value={appointmentDate}\n  onChange={setAppointmentDate}\n  minDate={new Date()}\n  maxDate={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)}\n  analyticsId=\"appointment-date\"\n/>"
+        }
+      ]
+    },
+    {
+      "name": "Popup",
+      "import": "import { Popup } from '@your-org/react-analytics-ui';",
+      "description": "Modal/popup component with built-in analytics tracking for open, close, and interaction events",
+      "props": {
+        "isOpen": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether the popup is open"
+        },
+        "onClose": {
+          "type": "() => void",
+          "required": true,
+          "description": "Callback when popup should close"
+        },
+        "title": {
+          "type": "string",
+          "required": false,
+          "description": "Popup title"
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": true,
+          "description": "Popup content"
+        },
+        "size": {
+          "type": "'small' | 'medium' | 'large'",
+          "default": "medium",
+          "description": "Popup size"
+        },
+        "showCloseButton": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to show close button"
+        },
+        "closeOnOverlayClick": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to close on overlay click"
+        },
+        "closeOnEscape": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to close on escape key"
+        },
+        "analyticsId": {
+          "type": "string",
+          "required": false,
+          "description": "Optional ID for analytics tracking"
+        },
+        "analyticsMetadata": {
+          "type": "Record<string, any>",
+          "required": false,
+          "description": "Additional metadata to include in analytics events"
+        },
+        "disableAnalytics": {
+          "type": "boolean",
+          "default": false,
+          "description": "Disable analytics tracking for this component"
+        }
+      },
+      "events": [
+        {
+          "name": "open",
+          "description": "Fired when the popup is opened",
+          "eventType": "popup_open"
+        },
+        {
+          "name": "close",
+          "description": "Fired when the popup is closed",
+          "eventType": "popup_close",
+          "metadata": "Includes duration (time opened in milliseconds) and closeMethod (button, overlay, escape)"
+        }
+      ],
+      "examples": [
+        {
+          "title": "Basic popup",
+          "code": "<Popup\n  isOpen={isOpen}\n  onClose={() => setIsOpen(false)}\n  title=\"Confirmation\"\n>\n  <p>Are you sure you want to continue?</p>\n  <Button onClick={() => setIsOpen(false)}>OK</Button>\n</Popup>"
+        },
+        {
+          "title": "Popup with analytics",
+          "code": "<Popup\n  isOpen={showDeleteConfirm}\n  onClose={() => setShowDeleteConfirm(false)}\n  title=\"Delete User\"\n  size=\"small\"\n  analyticsId=\"delete-user-popup\"\n  analyticsMetadata={{ userId: user.id, userName: user.name }}\n>\n  <p>Are you sure you want to delete {user.name}?</p>\n  <Button variant=\"danger\" onClick={handleDelete}>Delete</Button>\n  <Button variant=\"secondary\" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>\n</Popup>"
+        },
+        {
+          "title": "Large popup with custom behavior",
+          "code": "<Popup\n  isOpen={showDetails}\n  onClose={() => setShowDetails(false)}\n  title=\"User Details\"\n  size=\"large\"\n  closeOnOverlayClick={false}\n  closeOnEscape={false}\n  analyticsId=\"user-details-modal\"\n>\n  {/* Complex content */}\n</Popup>"
+        }
+      ]
+    }
+  ],
+  "analytics": {
+    "eventStructure": {
+      "eventType": {
+        "type": "string",
+        "description": "Type of event (e.g., \"button_click\", \"textbox_focus\")"
+      },
+      "componentType": {
+        "type": "string",
+        "description": "Type of component that triggered the event (e.g., \"button\", \"textbox\")"
+      },
+      "componentId": {
+        "type": "string",
+        "required": false,
+        "description": "Optional ID for the specific component instance (from analyticsId prop)"
+      },
+      "metadata": {
+        "type": "Record<string, any>",
+        "required": false,
+        "description": "Additional event metadata including user-provided analyticsMetadata and event-specific data"
+      },
+      "timestamp": {
+        "type": "number",
+        "description": "Unix timestamp in milliseconds when the event occurred"
+      }
+    },
+    "integrationGuide": {
+      "stepByStep": [
+        "1. Install the package: npm install @your-org/react-analytics-ui",
+        "2. Create an analytics adapter that implements the AnalyticsAdapter interface",
+        "3. Wrap your app with AnalyticsProvider and pass your adapter",
+        "4. Use components with analyticsId and analyticsMetadata props to track specific interactions",
+        "5. Events will automatically be sent to your analytics platform through the adapter"
+      ],
+      "platforms": {
+        "googleAnalytics": {
+          "description": "Integrate with Google Analytics 4",
+          "adapter": "const gaAdapter: AnalyticsAdapter = {\n  track: (event) => {\n    if (typeof gtag !== 'undefined') {\n      gtag('event', event.eventType, {\n        component_type: event.componentType,\n        component_id: event.componentId,\n        timestamp: event.timestamp,\n        ...event.metadata\n      });\n    }\n  }\n};"
+        },
+        "segment": {
+          "description": "Integrate with Segment",
+          "adapter": "const segmentAdapter: AnalyticsAdapter = {\n  track: (event) => {\n    if (window.analytics) {\n      window.analytics.track(event.eventType, {\n        componentType: event.componentType,\n        componentId: event.componentId,\n        timestamp: event.timestamp,\n        ...event.metadata\n      });\n    }\n  }\n};"
+        },
+        "mixpanel": {
+          "description": "Integrate with Mixpanel",
+          "adapter": "const mixpanelAdapter: AnalyticsAdapter = {\n  track: (event) => {\n    if (window.mixpanel) {\n      window.mixpanel.track(event.eventType, {\n        component_type: event.componentType,\n        component_id: event.componentId,\n        timestamp: event.timestamp,\n        ...event.metadata\n      });\n    }\n  }\n};"
+        },
+        "custom": {
+          "description": "Send events to your own API",
+          "adapter": "const customAdapter: AnalyticsAdapter = {\n  track: async (event) => {\n    try {\n      await fetch('/api/analytics', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(event)\n      });\n    } catch (error) {\n      console.error('Analytics error:', error);\n    }\n  }\n};"
+        }
+      }
+    },
+    "commonPatterns": {
+      "formTracking": {
+        "description": "Track form interactions",
+        "example": "<AnalyticsProvider adapter={myAdapter}>\n  <form onSubmit={handleSubmit}>\n    <TextBox\n      label=\"Name\"\n      analyticsId=\"signup-name\"\n      analyticsMetadata={{ formName: 'signup', step: 1 }}\n      value={name}\n      onChange={(e) => setName(e.target.value)}\n    />\n    <TextBox\n      label=\"Email\"\n      type=\"email\"\n      analyticsId=\"signup-email\"\n      analyticsMetadata={{ formName: 'signup', step: 1 }}\n      value={email}\n      onChange={(e) => setEmail(e.target.value)}\n    />\n    <Button\n      variant=\"primary\"\n      analyticsId=\"signup-submit\"\n      analyticsMetadata={{ formName: 'signup', step: 1 }}\n      type=\"submit\"\n    >\n      Sign Up\n    </Button>\n  </form>\n</AnalyticsProvider>"
+      },
+      "conditionalTracking": {
+        "description": "Disable tracking for specific components",
+        "example": "<Button\n  variant=\"primary\"\n  disableAnalytics={isTestEnvironment}\n  onClick={handleClick}\n>\n  Submit\n</Button>"
+      },
+      "contextualMetadata": {
+        "description": "Add context-specific metadata to events",
+        "example": "const metadata = {\n  userId: currentUser.id,\n  userRole: currentUser.role,\n  pageSection: 'checkout',\n  cartTotal: cart.total\n};\n\n<Button\n  analyticsId=\"checkout-btn\"\n  analyticsMetadata={metadata}\n  onClick={handleCheckout}\n>\n  Proceed to Checkout\n</Button>"
+      }
+    }
+  },
+  "bestPractices": [
+    {
+      "title": "Use meaningful analyticsId values",
+      "description": "Choose IDs that clearly describe the component's purpose and location",
+      "example": "Use \"header-login-btn\" instead of \"btn1\""
+    },
+    {
+      "title": "Include contextual metadata",
+      "description": "Add relevant context to analyticsMetadata to make events more meaningful",
+      "example": "Include form names, page sections, user segments, etc."
+    },
+    {
+      "title": "Avoid tracking sensitive data",
+      "description": "Never include passwords, credit card numbers, or PII in analytics events",
+      "example": "Use disableAnalytics or omit sensitive fields from metadata"
+    },
+    {
+      "title": "Test your analytics integration",
+      "description": "Use a console adapter during development to verify events are firing correctly",
+      "example": "Create a console adapter to log events before connecting to your analytics platform"
+    },
+    {
+      "title": "Handle analytics failures gracefully",
+      "description": "Ensure your adapter catches errors and doesn't break the UI",
+      "example": "Wrap track calls in try-catch blocks"
+    },
+    {
+      "title": "Disable change tracking by default",
+      "description": "For TextBox, only enable trackOnChange when needed to avoid noisy data",
+      "example": "Use trackOnChange={true} only for critical inputs"
+    }
+  ],
+  "metadata": {
+    "generatedAt": "2025-12-03T07:24:08.639Z",
+    "generatedBy": "generate-ai-docs.js",
+    "version": "1.0.0",
+    "purpose": "AI-consumable component library documentation"
+  }
+}

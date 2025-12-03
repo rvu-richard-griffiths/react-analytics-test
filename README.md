@@ -225,6 +225,26 @@ Analytics can be disabled at the provider or component level:
 </Button>
 ```
 
+## AI-Consumable Documentation
+
+This library includes machine-readable documentation designed for AI agents and code assistants to help developers integrate components more easily.
+
+### Generate Documentation
+
+```bash
+npm run generate-ai-docs
+# or
+task generate-ai-docs
+```
+
+This creates a `.ai/` directory with:
+- **component-manifest.json** - Complete API reference
+- **quick-start.md** - Quick start guide for AI agents
+- **component-reference.md** - Component reference table
+- **integration-examples.md** - Real-world code examples
+
+AI assistants (GitHub Copilot, Cursor, Claude, etc.) can use these files to provide better suggestions and help with integration.
+
 ## Development
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines.

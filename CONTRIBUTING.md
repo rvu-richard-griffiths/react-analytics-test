@@ -256,6 +256,13 @@ Ensure:
 - Components render correctly in Storybook
 - Analytics events are tracked properly
 
+**If you've added or changed components:**
+```bash
+task generate-ai-docs   # Update AI-consumable documentation
+```
+
+This regenerates the `.ai/` directory with updated component information for AI agents.
+
 ### 7. Commit Your Changes
 
 Use [Conventional Commits](https://www.conventionalcommits.org/):
