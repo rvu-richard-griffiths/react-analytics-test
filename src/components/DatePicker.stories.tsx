@@ -1,27 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { action } from '@storybook/addon-actions';
 import { useState } from 'react';
 import { DatePicker } from './DatePicker';
-import { AnalyticsProvider, AnalyticsAdapter } from '../analytics';
-
-const mockAdapter: AnalyticsAdapter = {
-  track: (event) => {
-    console.log('📊 Analytics Event:', event);
-    action('analytics-event')(event);
-  },
-};
 
 const meta: Meta<typeof DatePicker> = {
   title: 'Components/DatePicker',
   component: DatePicker,
   tags: ['autodocs'],
-  decorators: [
-    (Story) => (
-      <AnalyticsProvider adapter={mockAdapter}>
-        <Story />
-      </AnalyticsProvider>
-    ),
-  ],
   argTypes: {
     format: {
       control: 'select',

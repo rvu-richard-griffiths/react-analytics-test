@@ -1,6 +1,7 @@
 import type { Preview } from "@storybook/react";
 import React from 'react';
-import { AnalyticsProvider } from '../src/analytics/AnalyticsContext';
+import { action } from '@storybook/addon-actions';
+import { AnalyticsProvider, AnalyticsAdapter, AnalyticsEvent } from '../src/analytics/AnalyticsContext';
 import { createNatsAdapter } from '../src/analytics/NatsAdapter';
 
 // Create NATS adapter for demo
@@ -9,14 +10,25 @@ const natsAdapter = createNatsAdapter({
   debug: true, // Enable console logging in Storybook
 });
 
-console.log('🔧 Storybook Analytics Adapter initialized:', natsAdapter);
+// Create composite adapter that sends to both NATS and Storybook Actions
+const compositeAdapter: AnalyticsAdapter = {
+  track: (event: AnalyticsEvent) => {
+    // Send to Storybook Actions tab
+    action('analytics-event')(event);
+    
+    // Send to NATS
+    natsAdapter.track(event);
+  },
+};
+
+console.log('🔧 Storybook Analytics Adapter initialized (NATS + Actions)');
 
 const preview: Preview = {
   decorators: [
     (Story) => 
       React.createElement(
         AnalyticsProvider, 
-        { adapter: natsAdapter },
+        { adapter: compositeAdapter },
         React.createElement(Story)
       ),
   ],
