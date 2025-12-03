@@ -1,6 +1,50 @@
 import React, { createContext, useContext, useCallback, ReactNode } from 'react';
 
 /**
+ * Context information about where the event occurred
+ * This is channel-agnostic and works for web, mobile, desktop, etc.
+ */
+export interface AnalyticsContext {
+  /**
+   * The current view identifier (e.g., page path, screen name, route)
+   * Examples: '/dashboard', 'HomeScreen', 'settings-page'
+   */
+  view?: string;
+  
+  /**
+   * The section or module within the view
+   * Examples: 'header', 'sidebar', 'product-list', 'checkout-form'
+   */
+  section?: string;
+  
+  /**
+   * User session identifier
+   */
+  sessionId?: string;
+  
+  /**
+   * User identifier (if available)
+   */
+  userId?: string;
+  
+  /**
+   * Application or channel identifier
+   * Examples: 'web', 'ios', 'android', 'desktop'
+   */
+  channel?: string;
+  
+  /**
+   * Application version
+   */
+  appVersion?: string;
+  
+  /**
+   * Any additional custom context
+   */
+  custom?: Record<string, any>;
+}
+
+/**
  * Analytics event data structure
  */
 export interface AnalyticsEvent {
@@ -9,6 +53,7 @@ export interface AnalyticsEvent {
   componentId?: string;
   metadata?: Record<string, any>;
   timestamp: number;
+  context?: AnalyticsContext;
 }
 
 /**
@@ -24,12 +69,13 @@ export interface AnalyticsAdapter {
 interface AnalyticsContextValue {
   track: (event: Omit<AnalyticsEvent, 'timestamp'>) => void;
   adapter?: AnalyticsAdapter;
+  context?: AnalyticsContext;
 }
 
 /**
  * Analytics Context
  */
-const AnalyticsContext = createContext<AnalyticsContextValue | undefined>(undefined);
+const AnalyticsReactContext = createContext<AnalyticsContextValue | undefined>(undefined);
 
 /**
  * Provider props
@@ -38,6 +84,11 @@ export interface AnalyticsProviderProps {
   children: ReactNode;
   adapter?: AnalyticsAdapter;
   enabled?: boolean;
+  /**
+   * Contextual information to be included with all events
+   * Can be static or dynamically updated
+   */
+  context?: AnalyticsContext;
 }
 
 /**
@@ -52,7 +103,10 @@ export interface AnalyticsProviderProps {
  *   }
  * };
  * 
- * <AnalyticsProvider adapter={myAdapter}>
+ * <AnalyticsProvider 
+ *   adapter={myAdapter}
+ *   context={{ view: '/home', channel: 'web', sessionId: '123' }}
+ * >
  *   <App />
  * </AnalyticsProvider>
  * ```
@@ -61,8 +115,9 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
   children,
   adapter,
   enabled = true,
+  context: providerContext,
 }) => {
-  console.log('🔧 AnalyticsProvider mounted:', { hasAdapter: !!adapter, enabled });
+  console.log('🔧 AnalyticsProvider mounted:', { hasAdapter: !!adapter, enabled, context: providerContext });
   
   const track = useCallback(
     (event: Omit<AnalyticsEvent, 'timestamp'>) => {
@@ -76,6 +131,11 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
       const fullEvent: AnalyticsEvent = {
         ...event,
         timestamp: Date.now(),
+        // Merge provider context with event context (event context takes precedence)
+        context: {
+          ...providerContext,
+          ...event.context,
+        },
       };
 
       if (adapter) {
@@ -98,13 +158,13 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
         console.log('[Analytics] No adapter, logging:', fullEvent);
       }
     },
-    [adapter, enabled]
+    [adapter, enabled, providerContext]
   );
 
   return (
-    <AnalyticsContext.Provider value={{ track, adapter }}>
+    <AnalyticsReactContext.Provider value={{ track, adapter, context: providerContext }}>
       {children}
-    </AnalyticsContext.Provider>
+    </AnalyticsReactContext.Provider>
   );
 };
 
@@ -119,13 +179,14 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
  *   track({
  *     eventType: 'click',
  *     componentType: 'custom-button',
- *     metadata: { label: 'Submit' }
+ *     metadata: { label: 'Submit' },
+ *     context: { section: 'checkout-form' }
  *   });
  * };
  * ```
  */
 export const useAnalytics = (): AnalyticsContextValue => {
-  const context = useContext(AnalyticsContext);
+  const context = useContext(AnalyticsReactContext);
   
   if (context === undefined) {
     throw new Error('useAnalytics must be used within an AnalyticsProvider');
@@ -138,5 +199,78 @@ export const useAnalytics = (): AnalyticsContextValue => {
  * Optional hook for components that might not be wrapped in a provider
  */
 export const useOptionalAnalytics = (): AnalyticsContextValue | undefined => {
-  return useContext(AnalyticsContext);
+  return useContext(AnalyticsReactContext);
+};
+
+/**
+ * Nested Context Provider - Use this to add or override context at any level
+ * 
+ * This is useful for:
+ * - Adding page/route context when navigation changes
+ * - Adding section context for specific UI areas
+ * - Overriding context for specific features or modules
+ * 
+ * @example
+ * ```tsx
+ * // In your router or page component
+ * <AnalyticsContextProvider context={{ view: '/dashboard', section: 'analytics' }}>
+ *   <DashboardPage />
+ * </AnalyticsContextProvider>
+ * 
+ * // Or nest multiple levels
+ * <App>
+ *   <AnalyticsProvider adapter={adapter} context={{ channel: 'web', userId: '123' }}>
+ *     <Router>
+ *       <Route path="/dashboard">
+ *         <AnalyticsContextProvider context={{ view: '/dashboard' }}>
+ *           <DashboardPage />
+ *         </AnalyticsContextProvider>
+ *       </Route>
+ *     </Router>
+ *   </AnalyticsProvider>
+ * </App>
+ * ```
+ */
+export const AnalyticsContextProvider: React.FC<{
+  children: ReactNode;
+  context: Partial<AnalyticsContext>;
+}> = ({ children, context: additionalContext }) => {
+  const parentAnalytics = useOptionalAnalytics();
+  
+  const track = useCallback(
+    (event: Omit<AnalyticsEvent, 'timestamp'>) => {
+      if (!parentAnalytics) {
+        console.warn('AnalyticsContextProvider used without parent AnalyticsProvider');
+        return;
+      }
+      
+      // Merge parent context with this level's context and event context
+      parentAnalytics.track({
+        ...event,
+        context: {
+          ...parentAnalytics.context,
+          ...additionalContext,
+          ...event.context,
+        },
+      });
+    },
+    [parentAnalytics, additionalContext]
+  );
+  
+  const mergedContext = {
+    ...parentAnalytics?.context,
+    ...additionalContext,
+  };
+  
+  return (
+    <AnalyticsReactContext.Provider 
+      value={{ 
+        track, 
+        adapter: parentAnalytics?.adapter,
+        context: mergedContext,
+      }}
+    >
+      {children}
+    </AnalyticsReactContext.Provider>
+  );
 };

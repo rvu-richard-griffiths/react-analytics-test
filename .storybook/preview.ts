@@ -23,14 +23,37 @@ const compositeAdapter: AnalyticsAdapter = {
 
 console.log('🔧 Storybook Analytics Adapter initialized (NATS + Actions)');
 
+// Generate a simulated session ID for the Storybook session
+const sessionId = `storybook-session-${Date.now()}`;
+// Simulate a demo user
+const demoUserId = 'demo-user-123';
+
 const preview: Preview = {
   decorators: [
-    (Story) => 
-      React.createElement(
+    (Story, context) => {
+      // Extract story context for analytics
+      const storyContext = {
+        view: `/${context.title}/${context.name}`,
+        section: context.title,
+        channel: 'storybook',
+        appVersion: '1.0.0',
+        sessionId: sessionId,
+        userId: demoUserId,
+        custom: {
+          storyId: context.id,
+          storyKind: context.kind,
+        },
+      };
+      
+      return React.createElement(
         AnalyticsProvider, 
-        { adapter: compositeAdapter },
-        React.createElement(Story)
-      ),
+        { 
+          adapter: compositeAdapter,
+          context: storyContext,
+          children: React.createElement(Story),
+        }
+      );
+    },
   ],
   parameters: {
     actions: { argTypesRegex: "^on[A-Z].*" },

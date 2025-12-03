@@ -37,6 +37,9 @@ async function main() {
         if (data.componentId) {
           console.log(`🏷️  Component ID: ${data.componentId}`);
         }
+        if (data.context && Object.keys(data.context).length > 0) {
+          console.log(`🌍 Context:`, JSON.stringify(data.context, null, 2));
+        }
         if (data.metadata && Object.keys(data.metadata).length > 0) {
           console.log(`📋 Metadata:`, JSON.stringify(data.metadata, null, 2));
         }

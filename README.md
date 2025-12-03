@@ -193,17 +193,155 @@ const myAdapter: AnalyticsAdapter = {
     //   componentType: 'button' | 'textbox' | 'datepicker' | 'popup',
     //   componentId: 'unique-id',
     //   metadata: { custom: 'data' },
-    //   timestamp: 1234567890
+    //   timestamp: 1234567890,
+    //   context: {
+    //     view: '/dashboard',
+    //     section: 'header',
+    //     channel: 'web',
+    //     userId: '123',
+    //     sessionId: 'abc'
+    //   }
     // }
     
     // Example: Google Analytics
     gtag('event', event.eventType, {
       component_type: event.componentType,
       component_id: event.componentId,
+      page_path: event.context?.view,
       ...event.metadata
     });
   }
 };
+```
+
+### Adding Context to Events
+
+**Context** provides channel-agnostic information about where events occur - perfect for tracking across web, mobile, and other platforms.
+
+#### Global Context (App Level)
+
+```tsx
+import { AnalyticsProvider } from '@your-org/react-analytics-ui';
+
+function App() {
+  return (
+    <AnalyticsProvider 
+      adapter={myAdapter}
+      context={{
+        channel: 'web',
+        appVersion: '2.1.0',
+        userId: currentUser.id,
+        sessionId: sessionId,
+      }}
+    >
+      <YourApp />
+    </AnalyticsProvider>
+  );
+}
+```
+
+#### Page/Route Context
+
+```tsx
+import { AnalyticsContextProvider } from '@your-org/react-analytics-ui';
+
+function DashboardPage() {
+  return (
+    <AnalyticsContextProvider 
+      context={{ 
+        view: '/dashboard',
+        section: 'analytics' 
+      }}
+    >
+      <Dashboard />
+    </AnalyticsContextProvider>
+  );
+}
+```
+
+#### Nested Context (Sections)
+
+```tsx
+// Context cascades - each level adds to or overrides parent context
+<AnalyticsProvider context={{ channel: 'web', userId: '123' }}>
+  <Router>
+    <Route path="/checkout">
+      <AnalyticsContextProvider context={{ view: '/checkout' }}>
+        <CheckoutPage />
+        
+        {/* Further nesting for specific sections */}
+        <AnalyticsContextProvider context={{ section: 'payment-form' }}>
+          <PaymentForm />
+        </AnalyticsContextProvider>
+      </AnalyticsContextProvider>
+    </Route>
+  </Router>
+</AnalyticsProvider>
+```
+
+#### Event-Level Context
+
+```tsx
+// You can also add context directly to individual events
+const { track } = useAnalytics();
+
+const handleSpecialAction = () => {
+  track({
+    eventType: 'conversion',
+    componentType: 'button',
+    context: {
+      // Merges with provider context
+      section: 'special-offer',
+      custom: { campaign: 'summer-sale' }
+    }
+  });
+};
+```
+
+#### Context Properties
+
+All context properties are **optional** and **channel-agnostic**:
+
+| Property | Description | Example | When to Set |
+|----------|-------------|---------|-------------|
+| `view` | Current page/screen/route | `'/dashboard'`, `'HomeScreen'` | On route/page change |
+| `section` | Area within the view | `'header'`, `'checkout-form'` | For specific UI sections |
+| `channel` | Platform/app type | `'web'`, `'ios'`, `'android'` | At app initialization |
+| `userId` | User identifier | `'user-123'` | After authentication |
+| `sessionId` | Session identifier | `'session-abc'` | At session start |
+| `appVersion` | App version | `'2.1.0'` | At app initialization |
+| `custom` | Custom properties | `{ campaign: 'promo' }` | As needed |
+
+**Important Notes:**
+- `userId` and `sessionId` should come from your **real authentication/session system** in production
+- These help track user journeys and correlate events across sessions
+- For privacy: ensure compliance with GDPR/privacy policies when tracking user identifiers
+- Use anonymized/hashed IDs if required by your privacy policy
+
+**Real-world example:**
+```tsx
+import { AnalyticsProvider } from '@your-org/react-analytics-ui';
+import { useAuth } from './auth';
+import { useSession } from './session';
+
+function AppWithAnalytics() {
+  const { user } = useAuth();
+  const { sessionId } = useSession();
+  
+  return (
+    <AnalyticsProvider 
+      adapter={myAdapter}
+      context={{
+        channel: 'web',
+        appVersion: process.env.APP_VERSION,
+        userId: user?.id,           // From your auth system
+        sessionId: sessionId,        // From your session management
+      }}
+    >
+      <App />
+    </AnalyticsProvider>
+  );
+}
 ```
 
 ### Example Adapters
