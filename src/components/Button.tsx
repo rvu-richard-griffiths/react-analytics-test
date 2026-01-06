@@ -1,8 +1,8 @@
 import React, { ButtonHTMLAttributes, useCallback } from 'react';
-import { useOptionalAnalytics } from '../analytics';
+import { useOptionalAnalytics, AnalyticsProps } from '../analytics';
 import styles from './Button.module.css';
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, AnalyticsProps {
   /**
    * Button variant style
    */
@@ -11,18 +11,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
    * Button size
    */
   size?: 'small' | 'medium' | 'large';
-  /**
-   * Optional ID for analytics tracking
-   */
-  analyticsId?: string;
-  /**
-   * Additional metadata to include in analytics events
-   */
-  analyticsMetadata?: Record<string, any>;
-  /**
-   * Disable analytics tracking for this component
-   */
-  disableAnalytics?: boolean;
 }
 
 /**
