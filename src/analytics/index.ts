@@ -12,3 +12,5 @@ export type {
 } from './AnalyticsContext';
 export { NatsAdapter, createNatsAdapter } from './NatsAdapter';
 export type { NatsAdapterConfig } from './NatsAdapter';
+export { useAnalyticsTracking } from './useAnalyticsTracking';
+export type { AnalyticsProps } from './types';

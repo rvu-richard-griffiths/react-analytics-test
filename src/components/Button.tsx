@@ -1,8 +1,8 @@
 import React, { ButtonHTMLAttributes, useCallback } from 'react';
-import { useOptionalAnalytics } from '../analytics';
+import { useAnalyticsTracking, AnalyticsProps } from '../analytics';
 import styles from './Button.module.css';
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, AnalyticsProps {
   /**
    * Button variant style
    */
@@ -11,18 +11,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
    * Button size
    */
   size?: 'small' | 'medium' | 'large';
-  /**
-   * Optional ID for analytics tracking
-   */
-  analyticsId?: string;
-  /**
-   * Additional metadata to include in analytics events
-   */
-  analyticsMetadata?: Record<string, any>;
-  /**
-   * Disable analytics tracking for this component
-   */
-  disableAnalytics?: boolean;
 }
 
 /**
@@ -54,31 +42,30 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const analytics = useOptionalAnalytics();
+  const trackEvent = useAnalyticsTracking({
+    componentType: 'button',
+    componentId: analyticsId,
+    metadata: {
+      variant,
+      size,
+      label: typeof children === 'string' ? children : undefined,
+      ...analyticsMetadata,
+    },
+    disableAnalytics,
+    disabled,
+  });
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
-      // Track analytics if enabled and provider is available
-      if (!disableAnalytics && analytics && !disabled) {
-        analytics.track({
-          eventType: 'click',
-          componentType: 'button',
-          componentId: analyticsId,
-          metadata: {
-            variant,
-            size,
-            label: typeof children === 'string' ? children : undefined,
-            ...analyticsMetadata,
-          },
-        });
-      }
+      // Track analytics event
+      trackEvent('click');
 
       // Call the original onClick handler
       if (onClick) {
         onClick(event);
       }
     },
-    [analytics, analyticsId, analyticsMetadata, disableAnalytics, onClick, variant, size, children, disabled]
+    [trackEvent, onClick]
   );
 
   const buttonClasses = [

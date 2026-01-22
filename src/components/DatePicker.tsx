@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, InputHTMLAttributes, useCallback } from 'react';
-import { useOptionalAnalytics } from '../analytics';
+import { useAnalyticsTracking, AnalyticsProps } from '../analytics';
 import styles from './DatePicker.module.css';
 
-export interface DatePickerProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'value' | 'onChange'> {
+export interface DatePickerProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'value' | 'onChange'>, AnalyticsProps {
   /**
    * The selected date value
    */
@@ -23,18 +23,6 @@ export interface DatePickerProps extends Omit<InputHTMLAttributes<HTMLInputEleme
    * Date format for display (simplified)
    */
   format?: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
-  /**
-   * Optional ID for analytics tracking
-   */
-  analyticsId?: string;
-  /**
-   * Additional metadata to include in analytics events
-   */
-  analyticsMetadata?: Record<string, any>;
-  /**
-   * Disable analytics tracking for this component
-   */
-  disableAnalytics?: boolean;
 }
 
 /**
@@ -65,7 +53,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   className,
   ...props
 }) => {
-  const analytics = useOptionalAnalytics();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -94,24 +81,17 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     return `${year}-${month}-${day}`;
   };
 
-  const trackEvent = useCallback(
-    (eventType: string, metadata?: Record<string, any>) => {
-      if (!disableAnalytics && analytics && !disabled) {
-        analytics.track({
-          eventType,
-          componentType: 'datepicker',
-          componentId: analyticsId,
-          metadata: {
-            selectedDate: value ? toISODateString(value) : null,
-            format,
-            ...analyticsMetadata,
-            ...metadata,
-          },
-        });
-      }
+  const trackEvent = useAnalyticsTracking({
+    componentType: 'datepicker',
+    componentId: analyticsId,
+    metadata: {
+      selectedDate: value ? toISODateString(value) : null,
+      format,
+      ...analyticsMetadata,
     },
-    [analytics, analyticsId, analyticsMetadata, disableAnalytics, value, format, disabled]
-  );
+    disableAnalytics,
+    disabled,
+  });
 
   const handleOpen = useCallback(() => {
     if (!disabled) {

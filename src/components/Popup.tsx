@@ -1,8 +1,8 @@
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
-import { useOptionalAnalytics } from '../analytics';
+import { useAnalyticsTracking, AnalyticsProps } from '../analytics';
 import styles from './Popup.module.css';
 
-export interface PopupProps {
+export interface PopupProps extends AnalyticsProps {
   /**
    * Whether the popup is open
    */
@@ -35,18 +35,6 @@ export interface PopupProps {
    * Whether to close on escape key
    */
   closeOnEscape?: boolean;
-  /**
-   * Optional ID for analytics tracking
-   */
-  analyticsId?: string;
-  /**
-   * Additional metadata to include in analytics events
-   */
-  analyticsMetadata?: Record<string, any>;
-  /**
-   * Disable analytics tracking for this component
-   */
-  disableAnalytics?: boolean;
 }
 
 /**
@@ -81,29 +69,20 @@ export const Popup: React.FC<PopupProps> = ({
   analyticsMetadata,
   disableAnalytics = false,
 }) => {
-  const analytics = useOptionalAnalytics();
   const popupRef = useRef<HTMLDivElement>(null);
   const openedAtRef = useRef<number>(0);
   const hasTrackedOpenRef = useRef(false);
 
-  const trackEvent = useCallback(
-    (eventType: string, metadata?: Record<string, any>) => {
-      if (!disableAnalytics && analytics) {
-        analytics.track({
-          eventType,
-          componentType: 'popup',
-          componentId: analyticsId,
-          metadata: {
-            title,
-            size,
-            ...analyticsMetadata,
-            ...metadata,
-          },
-        });
-      }
+  const trackEvent = useAnalyticsTracking({
+    componentType: 'popup',
+    componentId: analyticsId,
+    metadata: {
+      title,
+      size,
+      ...analyticsMetadata,
     },
-    [analytics, analyticsId, analyticsMetadata, disableAnalytics, title, size]
-  );
+    disableAnalytics,
+  });
 
   // Track open event
   useEffect(() => {

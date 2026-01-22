@@ -1,8 +1,8 @@
 import React, { InputHTMLAttributes, useCallback, useState, useRef, useEffect } from 'react';
-import { useOptionalAnalytics } from '../analytics';
+import { useAnalyticsTracking, AnalyticsProps } from '../analytics';
 import styles from './TextBox.module.css';
 
-export interface TextBoxProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface TextBoxProps extends InputHTMLAttributes<HTMLInputElement>, AnalyticsProps {
   /**
    * Label for the text box
    */
@@ -15,18 +15,6 @@ export interface TextBoxProps extends InputHTMLAttributes<HTMLInputElement> {
    * Help text to display below the input
    */
   helpText?: string;
-  /**
-   * Optional ID for analytics tracking
-   */
-  analyticsId?: string;
-  /**
-   * Additional metadata to include in analytics events
-   */
-  analyticsMetadata?: Record<string, any>;
-  /**
-   * Disable analytics tracking for this component
-   */
-  disableAnalytics?: boolean;
   /**
    * Track on change events (can be noisy, disabled by default)
    */
@@ -65,7 +53,6 @@ export const TextBox: React.FC<TextBoxProps> = ({
   disabled,
   ...props
 }) => {
-  const analytics = useOptionalAnalytics();
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const startValueRef = useRef<string>('');
@@ -76,24 +63,17 @@ export const TextBox: React.FC<TextBoxProps> = ({
     }
   }, []);
 
-  const trackEvent = useCallback(
-    (eventType: string, metadata?: Record<string, any>) => {
-      if (!disableAnalytics && analytics && !disabled) {
-        analytics.track({
-          eventType,
-          componentType: 'textbox',
-          componentId: analyticsId,
-          metadata: {
-            label,
-            hasError: !!error,
-            ...analyticsMetadata,
-            ...metadata,
-          },
-        });
-      }
+  const trackEvent = useAnalyticsTracking({
+    componentType: 'textbox',
+    componentId: analyticsId,
+    metadata: {
+      label,
+      hasError: !!error,
+      ...analyticsMetadata,
     },
-    [analytics, analyticsId, analyticsMetadata, disableAnalytics, label, error, disabled]
-  );
+    disableAnalytics,
+    disabled,
+  });
 
   const handleFocus = useCallback(
     (event: React.FocusEvent<HTMLInputElement>) => {
